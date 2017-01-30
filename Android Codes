@@ -156,3 +156,25 @@ public void hideKeyboard() {
     compile 'com.android.support:cardview-v7:25.0.1'
     compile 'com.android.support:recyclerview-v7:25.0.1'
     testCompile 'junit:junit:4.12'
+    
+    
+    // Bluetooth Send Apk
+
+ApplicationInfo app = getApplicationContext().getApplicationInfo();
+String filePath = app.sourceDir;
+
+Intent intent = new Intent(Intent.ACTION_SEND);
+
+// MIME of .apk is "application/vnd.android.package-archive".
+// but Bluetooth does not accept this. Let's use "*/*" instead.
+intent.setType("*/*");
+
+// Only use Bluetooth to send .apk
+intent.setPackage("com.android.bluetooth");
+
+// Append file and send Intent
+intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(filePath)));
+startActivity(Intent.createChooser(intent, "Share app"));
+
+
+
