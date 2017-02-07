@@ -156,3 +156,80 @@ https://fcm.googleapis.com/fcm/send
   "to" : "cwpO595twOE:APA91bHvjUVE2DdcgdhpQeWaZdwpn00Yu-aZ-VaUE_XwEdOv0wvvTZYR61GyeBKLV7_2d89yJxXO88rsZ8FGawHebH1QIS-jdiA0Aydg3LgTCbVcomP83erypG971BCyXHSQNY7CkMxA"
 }
 
+
+/* Check Internet Connection in android */
+-----------------------------------------------------------------------
+
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+
+
+public boolean isNetworkAvailable() {
+    ConnectivityManager manager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+    NetworkInfo networkInfo = manager.getActiveNetworkInfo();
+
+    boolean isAvailable = false;
+    if (networkInfo != null && networkInfo.isConnected()) {
+        isAvailable = true;
+    }
+    return isAvailable;
+}
+
+-----------------------------------------------------------------------
+/* Alert Dialog Box */
+
+AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+        alertDialogBuilder.setMessage("Are you sure,You wanted to make decision");
+
+alertDialogBuilder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+	@Override
+	public void onClick(DialogInterface arg0, int arg1) {
+		Toast.makeText(SplashScreen.this,"You clicked yes button", Toast.LENGTH_LONG).show();
+	}
+});
+
+alertDialogBuilder.setNegativeButton("No",new DialogInterface.OnClickListener() {
+	@Override
+	public void onClick(DialogInterface dialog, int which) {
+		finish();
+	}
+});
+
+AlertDialog alertDialog = alertDialogBuilder.create();
+alertDialog.show();
+alertDialog.setCancelable(false);
+
+
+-----------------------------------------------------------------------
+/* call another activity */
+Intent intent = new Intent(SplashScreen.this, LoginActivity.class);
+startActivity(intent);
+
+-----------------------------------------------------------------------
+/* Check Location Manager enable  */
+ 
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+ 
+public static boolean isLocationEnabled(Context context) {
+	int locationMode = 0;
+	String locationProviders;
+
+	if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
+		try {
+			locationMode = Settings.Secure.getInt(context.getContentResolver(), Settings.Secure.LOCATION_MODE);
+
+		} catch (Settings.SettingNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		return locationMode != Settings.Secure.LOCATION_MODE_OFF;
+
+	}else{
+		locationProviders = Settings.Secure.getString(context.getContentResolver(), Settings.Secure.LOCATION_PROVIDERS_ALLOWED);
+		return !TextUtils.isEmpty(locationProviders);
+	}
+}
+
+-----------------------------------------------------------------------
+/*  */
+
