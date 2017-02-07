@@ -145,3 +145,14 @@ https://gooroo.io/
 
 Apis
 http://openweathermap.org/appid#get
+
+// FCM Send Notification :
+https://fcm.googleapis.com/fcm/send
+
+{ "notification": {
+    "title": "hi welcome to",
+    "body": "hello ggg"
+  },
+  "to" : "cwpO595twOE:APA91bHvjUVE2DdcgdhpQeWaZdwpn00Yu-aZ-VaUE_XwEdOv0wvvTZYR61GyeBKLV7_2d89yJxXO88rsZ8FGawHebH1QIS-jdiA0Aydg3LgTCbVcomP83erypG971BCyXHSQNY7CkMxA"
+}
+
