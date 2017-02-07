@@ -231,5 +231,307 @@ public static boolean isLocationEnabled(Context context) {
 }
 
 -----------------------------------------------------------------------
-/*  */
+/* Ion Library used */
+
+JsonObject json = new JsonObject();
+json.addProperty("stroll_category", myText);
+
+Ion.with(MainActivity.this)
+.load(AppConfig.URL_GET_ALL_STOLL)
+.setLogging("MyLogs", Log.DEBUG)
+.addHeader(AppConfig.HEADER_KEY, AppConfig.HEADER_VALUE)
+.setJsonObjectBody(json)
+.asJsonObject()
+.setCallback(new FutureCallback<JsonObject>() {
+
+	@Override
+	public void onCompleted(Exception e, JsonObject result) {
+		Log.d("MyAppp"," Request Callback "+result);
+		getstall_json(result);
+	}
+});
+
+
+-----------------------------------------------------------------------
+/* Invoke Image Crop Library */
+
+/**
+     * Start pick image activity with chooser.
+     */
+    public void onSelectImageClick(View view) {
+        CropImage.startPickImageActivity(this);
+    }
+
+    @Override
+    @SuppressLint("NewApi")
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        // handle result of pick image chooser
+        if (requestCode == CropImage.PICK_IMAGE_CHOOSER_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            Uri imageUri = CropImage.getPickImageResultUri(this, data);
+
+            // For API >= 23 we need to check specifically that we have permissions to read external storage.
+            if (CropImage.isReadExternalStoragePermissionsRequired(this, imageUri)) {
+                // request permissions and handle the result in onRequestPermissionsResult()
+                mCropImageUri = imageUri;
+                requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, 0);
+            } else {
+                // no permissions required or already grunted, can start crop image activity
+                startCropImageActivity(imageUri);
+            }
+        }
+
+        // handle result of CropImageActivity
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                ((ImageView) findViewById(R.id.quick_start_cropped_image)).setImageURI(result.getUri());
+
+                ((ImageView) findViewById(R.id.quick_start_cropped_image)).buildDrawingCache();
+                Bitmap bm=((ImageView) findViewById(R.id.quick_start_cropped_image)).getDrawingCache();
+
+
+                File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
+                        Environment.DIRECTORY_PICTURES), "MyCameraApp");
+                // This location works best if you want the created images to be shared
+                // between applications and persist after your app has been uninstalled.
+
+                // Create the storage directory if it does not exist
+                if (! mediaStorageDir.exists()){
+                    if (! mediaStorageDir.mkdirs()){
+                        Log.d("MyCameraApp", "failed to create directory");
+                    }
+                }
+
+                // Create a media file name
+                String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
+                File mediaFile;
+
+                mediaFile = new File(mediaStorageDir.getPath() + File.separator +
+                        "IMG_"+ timeStamp + ".jpg");
+
+                OutputStream fOut = null;
+                Uri outputFileUri;
+                try {
+                    File sdImageMainDirectory = new File(mediaStorageDir.getPath() + File.separator +
+                            "IMG_"+ timeStamp + ".jpg");
+
+                    image_link = sdImageMainDirectory.getAbsolutePath().toString();
+                    outputFileUri = Uri.fromFile(sdImageMainDirectory);
+                    fOut = new FileOutputStream(sdImageMainDirectory);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    Toast.makeText(this, "Error occurred. Please try again later.",
+                            Toast.LENGTH_SHORT).show();
+                }
+                try {
+                    bm.compress(Bitmap.CompressFormat.PNG, 100, fOut);
+                    fOut.flush();
+                    fOut.close();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+                setNoneditableText();
+                Toast.makeText(this," "+image_link+ "Cropping successful and saved, Sample: " + result.getSampleSize(), Toast.LENGTH_LONG).show();
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Toast.makeText(this, "Cropping failed: " + result.getError(), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (mCropImageUri != null && grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            // required permissions granted, start crop image activity
+            startCropImageActivity(mCropImageUri);
+        } else {
+            Toast.makeText(this, "Cancelling, required permissions are not granted", Toast.LENGTH_LONG).show();
+        }
+    }
+
+    /**
+     * Start crop image activity for the given image.
+     */
+    private void startCropImageActivity(Uri imageUri) {
+        CropImage.activity(imageUri)
+                .setGuidelines(CropImageView.Guidelines.ON)
+                .setMultiTouchEnabled(true)
+                .start(this);
+    }
+	
+	Permission :
+	<uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+	Menifest Add :
+	<activity android:name="com.theartofdev.edmodo.cropper.CropImageActivity" />
+	
+	Dependecy Add :
+	image crop from gallery				compile 'com.theartofdev.edmodo:android-image-cropper:2.3.+'
+    for circle image view				compile 'de.hdodenhof:circleimageview:2.1.0'
+	
+-----------------------------------------------------------------------
+/* Shared Preferences Use */
+	//initalise 
+	SharedPreferences sharedpreferences;
+	
+	//init an shared preferences
+    sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
+
+	
+	// save data
+	SharedPreferences.Editor editor = sharedpreferences.edit();
+	editor.putString(Name, name);
+    editor.commit();
+            
+
+	// get shared Preference data
+    public String getData(String key) {
+        if (sharedpreferences!= null) {
+            return sharedpreferences.getString(key, "");
+        }
+        return "";
+    }
+
+
+-----------------------------------------------------------------------
+/* Replace String " to space */
+data.replace("\""," ");
+
+-----------------------------------------------------------------------
+
+	Task List for developement :
+1.	File uploading & downloading progress display on client side on website.
+2.  Embed plyr video player in html
+3.  Listview problem in scrolling will be spread an color
+
+
+-----------------------------------------------------------------------
+/* Maven integration in eclipse   */
+
+Install new software
+
+    Name: m2e
+    Location: http://download.eclipse.org/technology/m2e/releases
+	
+	download Maven 
+		
+	http://maven.apache.org/
+
+	Setup Env Variables
+
+    JAVA_HOME=C:\DevPrograms\Java\jdk1.8.0_40
+    M2_HOME=D:\DevPrograms\apache-maven-3.3.3
+    M2=%M2_HOME%\bin
+    Path=;%M2%;%JAVA_HOME%\bin
+
+
+-----------------------------------------------------------------------
+/*  heroku deplying steps  */
+
+
+$ heroku login
+
+Create a new Git repository
+
+Initialize a git repository in a new or existing directory
+
+$ cd my-project/
+$ git init
+$ heroku git:remote -a amit-page-app
+
+Deploy your application
+
+Commit your code to the repository and deploy it to Heroku using Git.
+
+$ git add .
+$ git commit -am "make it better"
+$ git push heroku master
+
+Existing Git repository
+
+For existing repositories, simply add the heroku remote
+
+$ heroku git:remote -a amit-page-app
+
+-----------------------------------------------------------------------
+/* facebook messanger api code  For setting an button on page app follow next step  */
+
+
+https://graph.facebook.com/v2.6/me/thread_settings?access_token=
+
+send post request with follwoing JSON.
+
+{
+  "setting_type" : "call_to_actions",
+  "thread_state" : "existing_thread",
+  "call_to_actions":[
+    {
+      "type":"postback",
+      "title":"Help",
+      "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_HELP"
+    },
+    {
+      "type":"postback",
+      "title":"Start Again",
+      "payload":"DEVELOPER_DEFINED_PAYLOAD_FOR_START_ORDER"
+    },
+    {
+      "type":"web_url",
+      "title":"View Website",
+      "url":"http://taskmarketing.in/"
+    }
+  ]
+}
+
+-----------------------------------------------------------------------
+/* facebook messanger getting user profile information   */
+
+Post JSON Request
+
+parameters:
+access_token,fields(first_name,last_name,profile_pic,locale,timezone,gender);
+
+
+https://graph.facebook.com/v2.6/100013257045298?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=
+
+
+-----------------------------------------------------------------------
+/* facebook messanger getting added get started button  */
+
+https://graph.facebook.com/v2.6/me/thread_settings?access_token=
+
+ost JSON Request
+
+{
+  "setting_type":"call_to_actions",
+  "thread_state":"new_thread",
+  "call_to_actions":[
+    {
+      "payload":"USER_DEFINED_PAYLOAD"
+    }
+  ]
+}
+
+-----------------------------------------------------------------------
+/* for command of maven java project create   */
+
+mvn archetype:generate -DarchetypeArtifactId=jersey-quickstart-grizzly2 \ -DarchetypeGroupId=org.glassfish.jersey.archetypes -DinteractiveMode=false \ -DgroupId=com.example -DartifactId=simple-service -Dpackage=com.example \ -DarchetypeVersion=2.23.2
+
+
+-----------------------------------------------------------------------
+/* Generate Key Hashes For Windows  */
+
+keytool -exportcert -alias YOUR_RELEASE_KEY_ALIAS -keystore YOUR_RELEASE_KEY_PATH | openssl sha1 -binary | openssl base64
+
+
+-----------------------------------------------------------------------
+/*  facebook bind the page and webview */
+
+https://graph.facebook.com/v2.6/me/thread_settings?access_token=
+
+
+-----------------------------------------------------------------------
+/*   */
 
